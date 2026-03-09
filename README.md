@@ -25,7 +25,7 @@
 Để sử dụng thư viện này trong Script của bạn, hãy sử dụng đoạn mã `loadstring` dưới đây:
 
 ```lua
-local Lib = loadstring(game:HttpGet("[https://raw.githubusercontent.com/torudz/Toruz/main/main.lua](https://raw.githubusercontent.com/torudz/Toruz/main/main.lua)"))()
+local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/torudz/Toruz/main/main.lua"))()
 
 -- Khởi tạo Menu chính
 local Window = Lib:CreateWindow("Toruz")
