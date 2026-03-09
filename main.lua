@@ -27,7 +27,6 @@ function Library:CreateWindow(panelName, userName)
     Main.Draggable = true 
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 4)
 
-    -- NÚT POWER ĐỎ
     local PowerBtn = Instance.new("TextButton")
     PowerBtn.Size = UDim2.new(0, 30, 0, 30)
     PowerBtn.Position = UDim2.new(0, 5, 0, 5)
@@ -35,12 +34,11 @@ function Library:CreateWindow(panelName, userName)
     PowerBtn.Text = "⏻"
     PowerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     PowerBtn.TextSize = 18
-    PowerBtn.Parent = Main
     PowerBtn.ZIndex = 5
+    PowerBtn.Parent = Main
     Instance.new("UICorner", PowerBtn).CornerRadius = UDim.new(0, 4)
     PowerBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
-    -- TÊN PANEL (ĐÃ SỬA VỊ TRÍ)
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1, -40, 0, 35)
     Title.Position = UDim2.new(0, 40, 0, 0)
@@ -52,7 +50,6 @@ function Library:CreateWindow(panelName, userName)
     Title.ZIndex = 5
     Title.Parent = Main
 
-    -- INFO USER & FPS
     local InfoLabel = Instance.new("TextLabel")
     InfoLabel.Size = UDim2.new(0, 100, 0, 40)
     InfoLabel.Position = UDim2.new(0, 5, 0, 40)
@@ -68,7 +65,6 @@ function Library:CreateWindow(panelName, userName)
         InfoLabel.Text = (userName or "User") .. "\nFps: " .. math.floor(1/dt * 10)/10
     end)
 
-    -- SIDEBAR
     local SideBar = Instance.new("Frame")
     SideBar.Size = UDim2.new(0, 100, 1, -85)
     SideBar.Position = UDim2.new(0, 5, 0, 80)
@@ -76,7 +72,6 @@ function Library:CreateWindow(panelName, userName)
     SideBar.Parent = Main
     Instance.new("UIListLayout", SideBar).Padding = UDim.new(0, 3)
 
-    -- KHUNG CHỨA NỘI DUNG (ĐÃ CHỈNH LẠI VỊ TRÍ ĐỂ KHÔNG ĐÈ TÊN)
     local TabContainer = Instance.new("Frame")
     TabContainer.Name = "TabContainer"
     TabContainer.Size = UDim2.new(0, 330, 1, -45)
@@ -105,7 +100,7 @@ function Library:CreateWindow(panelName, userName)
         Content.Parent = TabContainer
         
         local Layout = Instance.new("UIListLayout", Content)
-        Layout.Padding = UDim.new(0, 2)
+        Layout.Padding = UDim.new(0, 5)
         Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
             Content.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 10)
         end)
@@ -125,9 +120,10 @@ function Library:CreateWindow(panelName, userName)
         end
         table.insert(Window.Tabs, {Button = TabBtn, Content = Content})
 
+        -- TOGGLE
         function TabPage:AddToggle(text, callback)
             local TFrame = Instance.new("Frame")
-            TFrame.Size = UDim2.new(1, 0, 0, 30)
+            TFrame.Size = UDim2.new(1, -10, 0, 30)
             TFrame.BackgroundTransparency = 1
             TFrame.Parent = Content
             local Box = Instance.new("TextButton")
@@ -144,6 +140,7 @@ function Library:CreateWindow(panelName, userName)
             Label.Text = text
             Label.TextColor3 = Color3.fromRGB(220, 220, 220)
             Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Font = Enum.Font.SourceSans
             Label.Parent = TFrame
             local state = false
             Box.MouseButton1Click:Connect(function()
@@ -154,9 +151,10 @@ function Library:CreateWindow(panelName, userName)
             end)
         end
 
+        -- SLIDER
         function TabPage:AddSlider(text, min, max, default, callback)
             local SFrame = Instance.new("Frame")
-            SFrame.Size = UDim2.new(1, 0, 0, 45)
+            SFrame.Size = UDim2.new(1, -10, 0, 45)
             SFrame.BackgroundTransparency = 1
             SFrame.Parent = Content
             local Label = Instance.new("TextLabel")
@@ -166,6 +164,7 @@ function Library:CreateWindow(panelName, userName)
             Label.Text = text .. " : " .. default
             Label.TextColor3 = Color3.fromRGB(220, 220, 220)
             Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Font = Enum.Font.SourceSans
             Label.Parent = SFrame
             local SliderBack = Instance.new("Frame")
             SliderBack.Size = UDim2.new(1, -20, 0, 6)
@@ -202,6 +201,87 @@ function Library:CreateWindow(panelName, userName)
                     dragging = false
                 end
             end)
+        end
+
+        -- DROPDOWN
+        function TabPage:AddDropdown(text, options, callback)
+            local DFrame = Instance.new("Frame")
+            DFrame.Size = UDim2.new(1, -10, 0, 30)
+            DFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            DFrame.ClipsDescendants = true
+            DFrame.Parent = Content
+            Instance.new("UICorner", DFrame).CornerRadius = UDim.new(0, 4)
+            local DBtn = Instance.new("TextButton")
+            DBtn.Size = UDim2.new(1, 0, 0, 30)
+            DBtn.BackgroundTransparency = 1
+            DBtn.Text = "  " .. text .. " : Chọn..."
+            DBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            DBtn.TextXAlignment = Enum.TextXAlignment.Left
+            DBtn.Font = Enum.Font.SourceSans
+            DBtn.Parent = DFrame
+            local open = false
+            DBtn.MouseButton1Click:Connect(function()
+                open = not open
+                TweenService:Create(DFrame, TweenInfo.new(0.3), {Size = open and UDim2.new(1, -10, 0, 30 + (#options * 25)) or UDim2.new(1, -10, 0, 30)}):Play()
+                if open then
+                    for i, v in pairs(options) do
+                        local Opt = Instance.new("TextButton")
+                        Opt.Name = "Option"
+                        Opt.Size = UDim2.new(1, 0, 0, 25)
+                        Opt.Position = UDim2.new(0, 0, 0, 30 + (i-1)*25)
+                        Opt.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+                        Opt.BorderSizePixel = 0
+                        Opt.Text = v
+                        Opt.TextColor3 = Color3.fromRGB(200, 200, 200)
+                        Opt.Parent = DFrame
+                        Opt.MouseButton1Click:Connect(function()
+                            DBtn.Text = "  " .. text .. " : " .. v
+                            callback(v)
+                            open = false
+                            TweenService:Create(DFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, -10, 0, 30)}):Play()
+                            for _, obj in pairs(DFrame:GetChildren()) do if obj.Name == "Option" then obj:Destroy() end end
+                        end)
+                    end
+                else
+                    for _, obj in pairs(DFrame:GetChildren()) do if obj.Name == "Option" then obj:Destroy() end end
+                end
+            end)
+        end
+
+        -- PARAGRAPH (MỚI)
+        function TabPage:AddParagraph(title, text)
+            local PFrame = Instance.new("Frame")
+            PFrame.Size = UDim2.new(1, -10, 0, 60)
+            PFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            PFrame.Parent = Content
+            Instance.new("UICorner", PFrame).CornerRadius = UDim.new(0, 4)
+
+            local PTitle = Instance.new("TextLabel")
+            PTitle.Size = UDim2.new(1, -10, 0, 20)
+            PTitle.Position = UDim2.new(0, 5, 0, 5)
+            PTitle.BackgroundTransparency = 1
+            PTitle.Text = title
+            PTitle.TextColor3 = Color3.fromRGB(0, 120, 255)
+            PTitle.Font = Enum.Font.SourceSansBold
+            PTitle.TextSize = 14
+            PTitle.TextXAlignment = Enum.TextXAlignment.Left
+            PTitle.Parent = PFrame
+
+            local PText = Instance.new("TextLabel")
+            PText.Size = UDim2.new(1, -10, 0, 30)
+            PText.Position = UDim2.new(0, 5, 0, 25)
+            PText.BackgroundTransparency = 1
+            PText.Text = text
+            PText.TextColor3 = Color3.fromRGB(200, 200, 200)
+            PText.Font = Enum.Font.SourceSans
+            PText.TextSize = 13
+            PText.TextWrapped = true
+            PText.TextXAlignment = Enum.TextXAlignment.Left
+            PText.TextYAlignment = Enum.TextYAlignment.Top
+            PText.Parent = PFrame
+            
+            -- Tự động chỉnh độ cao Paragraph theo nội dung chữ
+            PFrame.Size = UDim2.new(1, -10, 0, PText.TextBounds.Y + 35)
         end
 
         return TabPage
