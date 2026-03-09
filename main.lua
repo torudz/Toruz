@@ -2,36 +2,56 @@ local Library = {}
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 
-if CoreGui:FindFirstChild("GeminiLib_UI") then
-    CoreGui.GeminiLib_UI:Destroy()
+-- Xóa bản cũ nếu tồn tại để tránh đè UI
+if CoreGui:FindFirstChild("GeminiPrism_Mobile") then
+    CoreGui.GeminiPrism_Mobile:Destroy()
 end
 
 function Library:CreateWindow(titleText)
+    local Window = {} -- Table chứa các method của Window
+    
+    -- Khởi tạo ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "GeminiLib_UI"
+    ScreenGui.Name = "GeminiPrism_Mobile"
     ScreenGui.Parent = CoreGui
     ScreenGui.IgnoreGuiInset = true
 
+    -- Khung Chính
     local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
-    MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -140)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
     MainFrame.Size = UDim2.new(0, 450, 0, 300)
     MainFrame.Active = true
     MainFrame.Draggable = true
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
-    local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 10)
-    MainCorner.Parent = MainFrame
-
-    -- Sidebar & Container (Giống bản trước)
+    -- Sidebar
     local SideBar = Instance.new("Frame")
     SideBar.Name = "SideBar"
     SideBar.Parent = MainFrame
-    SideBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    SideBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     SideBar.Size = UDim2.new(0, 100, 1, 0)
-    Instance.new("UICorner", SideBar).CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", SideBar).CornerRadius = UDim.new(0, 12)
 
+    local SideLayout = Instance.new("UIListLayout")
+    SideLayout.Parent = SideBar
+    SideLayout.Padding = UDim.new(0, 5)
+    SideLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+    -- Tiêu đề
+    local Title = Instance.new("TextLabel")
+    Title.Parent = MainFrame
+    Title.Text = titleText or "GEMINI PRISM"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextSize = 14
+    Title.Position = UDim2.new(0, 110, 0, 10)
+    Title.Size = UDim2.new(0, 330, 0, 20)
+    Title.BackgroundTransparency = 1
+
+    -- Nội dung cuộn
     local Container = Instance.new("ScrollingFrame")
     Container.Name = "Container"
     Container.Parent = MainFrame
@@ -45,89 +65,133 @@ function Library:CreateWindow(titleText)
     ContainerLayout.Parent = Container
     ContainerLayout.Padding = UDim.new(0, 8)
     
-    -- Cập nhật CanvasSize mỗi khi thêm item
     ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         Container.CanvasSize = UDim2.new(0, 0, 0, ContainerLayout.AbsoluteContentSize.Y + 20)
     end)
 
-    -- [HÀM MỚI: PARAGRAPH]
-    function Library:AddParagraph(title, content)
-        local PFrame = Instance.new("Frame")
-        PFrame.Size = UDim2.new(1, -10, 0, 50)
-        PFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-        PFrame.Parent = Container
-        Instance.new("UICorner", PFrame).CornerRadius = UDim.new(0, 6)
-
-        local PTitle = Instance.new("TextLabel")
-        PTitle.Text = title
-        PTitle.Size = UDim2.new(1, -10, 0, 20)
-        PTitle.Position = UDim2.new(0, 10, 0, 5)
-        PTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-        PTitle.Font = Enum.Font.GothamBold
-        PTitle.BackgroundTransparency = 1
-        PTitle.TextXAlignment = Enum.TextXAlignment.Left
-        PTitle.Parent = PFrame
-
-        local PDesc = Instance.new("TextLabel")
-        PDesc.Text = content
-        PDesc.Size = UDim2.new(1, -10, 0, 20)
-        PDesc.Position = UDim2.new(0, 10, 0, 25)
-        PDesc.TextColor3 = Color3.fromRGB(180, 180, 180)
-        PDesc.Font = Enum.Font.Gotham
-        PDesc.TextWrapped = true
-        PDesc.BackgroundTransparency = 1
-        PDesc.TextXAlignment = Enum.TextXAlignment.Left
-        PDesc.Parent = PFrame
+    -- [METHOD: ADDTAB]
+    function Window:AddTab(name, icon)
+        local TabBtn = Instance.new("TextButton")
+        TabBtn.Parent = SideBar
+        TabBtn.Size = UDim2.new(0, 90, 0, 35)
+        TabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+        TabBtn.Text = (icon or "") .. " " .. name
+        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TabBtn.Font = Enum.Font.GothamMedium
+        TabBtn.TextSize = 11
+        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
+        
+        -- Ở bản này mình làm đơn giản, bạn có thể thêm logic chuyển đổi Container tại đây
+        return TabBtn
     end
 
-    -- [HÀM MỚI: DROPDOWN]
-    function Library:AddDropdown(text, list, callback)
+    -- [METHOD: ADDPARAGRAPH]
+    function Window:AddParagraph(title, content)
+        local PFrame = Instance.new("Frame")
+        PFrame.Size = UDim2.new(1, -10, 0, 55)
+        PFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        PFrame.Parent = Container
+        Instance.new("UICorner", PFrame).CornerRadius = UDim.new(0, 8)
+
+        local PT = Instance.new("TextLabel")
+        PT.Text = title
+        PT.Size = UDim2.new(1, -20, 0, 25)
+        PT.Position = UDim2.new(0, 10, 0, 5)
+        PT.TextColor3 = Color3.fromRGB(255, 255, 255)
+        PT.Font = Enum.Font.GothamBold
+        PT.BackgroundTransparency = 1
+        PT.TextXAlignment = Enum.TextXAlignment.Left
+        PT.Parent = PFrame
+
+        local PD = Instance.new("TextLabel")
+        PD.Text = content
+        PD.Size = UDim2.new(1, -20, 0, 20)
+        PD.Position = UDim2.new(0, 10, 0, 25)
+        PD.TextColor3 = Color3.fromRGB(180, 180, 180)
+        PD.Font = Enum.Font.Gotham
+        PD.BackgroundTransparency = 1
+        PD.TextXAlignment = Enum.TextXAlignment.Left
+        PD.Parent = PFrame
+    end
+
+    -- [METHOD: ADDTOGGLE]
+    function Window:AddToggle(text, callback)
+        local TFrame = Instance.new("Frame")
+        TFrame.Size = UDim2.new(1, -10, 0, 35)
+        TFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        TFrame.Parent = Container
+        Instance.new("UICorner", TFrame).CornerRadius = UDim.new(0, 6)
+
+        local Button = Instance.new("TextButton")
+        Button.Size = UDim2.new(1, 0, 1, 0)
+        Button.BackgroundTransparency = 1
+        Button.Text = "  " .. text
+        Button.TextColor3 = Color3.fromRGB(200, 200, 200)
+        Button.Font = Enum.Font.Gotham
+        Button.TextXAlignment = Enum.TextXAlignment.Left
+        Button.Parent = TFrame
+
+        local Indicator = Instance.new("Frame")
+        Indicator.Size = UDim2.new(0, 18, 0, 18)
+        Indicator.Position = UDim2.new(1, -25, 0.5, -9)
+        Indicator.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        Indicator.Parent = TFrame
+        Instance.new("UICorner", Indicator).CornerRadius = UDim.new(0, 4)
+
+        local enabled = false
+        Button.MouseButton1Click:Connect(function()
+            enabled = not enabled
+            TweenService:Create(Indicator, TweenInfo.new(0.2), {
+                BackgroundColor3 = enabled and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(60, 60, 60)
+            }):Play()
+            callback(enabled)
+        end)
+    end
+
+    -- [METHOD: ADDDROPDOWN]
+    function Window:AddDropdown(text, options, callback)
         local DFrame = Instance.new("Frame")
         DFrame.Size = UDim2.new(1, -10, 0, 35)
-        DFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        DFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        DFrame.ClipsDescendants = true
         DFrame.Parent = Container
         Instance.new("UICorner", DFrame).CornerRadius = UDim.new(0, 6)
 
         local DBtn = Instance.new("TextButton")
-        DBtn.Size = UDim2.new(1, 0, 1, 0)
+        DBtn.Size = UDim2.new(1, 0, 0, 35)
         DBtn.BackgroundTransparency = 1
         DBtn.Text = text .. " : Select"
         DBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
         DBtn.Font = Enum.Font.Gotham
         DBtn.Parent = DFrame
 
-        local isOpening = false
+        local open = false
         DBtn.MouseButton1Click:Connect(function()
-            isOpening = not isOpening
-            if isOpening then
-                DFrame.Size = UDim2.new(1, -10, 0, 35 + (#list * 30))
-                for i, val in ipairs(list) do
+            open = not open
+            DFrame.Size = open and UDim2.new(1, -10, 0, 35 + (#options * 30)) or UDim2.new(1, -10, 0, 35)
+            if open then
+                for i, v in pairs(options) do
                     local Opt = Instance.new("TextButton")
-                    Opt.Name = "Option"
                     Opt.Size = UDim2.new(1, 0, 0, 30)
                     Opt.Position = UDim2.new(0, 0, 0, 35 + (i-1)*30)
-                    Opt.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-                    Opt.Text = tostring(val)
+                    Opt.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+                    Opt.Text = v
                     Opt.TextColor3 = Color3.fromRGB(200, 200, 200)
+                    Opt.Font = Enum.Font.Gotham
                     Opt.Parent = DFrame
                     
                     Opt.MouseButton1Click:Connect(function()
-                        DBtn.Text = text .. " : " .. tostring(val)
-                        callback(val)
-                        isOpening = false
+                        DBtn.Text = text .. " : " .. v
+                        callback(v)
+                        open = false
                         DFrame.Size = UDim2.new(1, -10, 0, 35)
-                        for _, v in pairs(DFrame:GetChildren()) do if v.Name == "Option" then v:Destroy() end end
                     end)
                 end
-            else
-                DFrame.Size = UDim2.new(1, -10, 0, 35)
-                for _, v in pairs(DFrame:GetChildren()) do if v.Name == "Option" then v:Destroy() end end
             end
         end)
     end
 
-    -- (Hàm AddToggle và AddTab giữ nguyên như bản cũ)
-    return Library
+    return Window
 end
 
 return Library
