@@ -289,6 +289,37 @@ function Library:CreateWindow(panelName, userName)
             PFrame.Size = UDim2.new(1, -10, 0, PText.TextBounds.Y + 35)
         end
 
+        function TabPage:AddLabel(text)
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -10, 0, 20)
+    Label.BackgroundTransparency = 1
+    Label.Text = "  > " .. text
+    Label.TextColor3 = Color3.fromRGB(180, 180, 180) -- Màu xám nhạt
+    Label.Font = Enum.Font.SourceSansItalic
+    Label.TextSize = 14
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = Content
+end
+
+-- 1. Nút Copy (Dùng để Copy Discord/Link)
+function TabPage:AddCopyButton(text, contentToCopy)
+    local CBtn = Instance.new("TextButton")
+    CBtn.Size = UDim2.new(1, -10, 0, 30)
+    CBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100) -- Màu xanh lá cho nổi bật
+    CBtn.Text = "📋 " .. text
+    CBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CBtn.Font = Enum.Font.SourceSansBold
+    CBtn.Parent = Content
+    Instance.new("UICorner", CBtn).CornerRadius = UDim.new(0, 4)
+    
+    CBtn.MouseButton1Click:Connect(function()
+        setclipboard(contentToCopy) -- Hàm copy vào máy
+        CBtn.Text = "✅ Đã Copy!"
+        task.wait(2)
+        CBtn.Text = "📋 " .. text
+    end)
+end
+
         return TabPage
     end
 
