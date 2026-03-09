@@ -53,7 +53,7 @@ function KeySystem:Start(config)
     GetKeyBtn.Size = UDim2.new(0, 125, 0, 35)
     GetKeyBtn.Position = UDim2.new(0, 155, 0, 100)
     GetKeyBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    GetKeyBtn.Text = "Get Key (Discord)"
+    GetKeyBtn.Text = "Get Key"
     GetKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     Instance.new("UICorner", GetKeyBtn)
 
