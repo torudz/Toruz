@@ -1,235 +1,156 @@
 local Library = {}
 local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
--- Xóa bản cũ nếu tồn tại để tránh đè UI
-if CoreGui:FindFirstChild("Toruz") then
-    CoreGui.Toruz:Destroy()
+-- Xóa bản cũ nếu tồn tại
+if CoreGui:FindFirstChild("Toruz_Panel") then
+    CoreGui.Toruz_Panel:Destroy()
 end
 
-function Library:CreateWindow(titleText)
-    local Window = {} -- Table chứa các method của Window
+function Library:CreateWindow(titleText, userName)
+    local Window = {}
     
-    -- Khởi tạo ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "Toruz"
+    ScreenGui.Name = "Toruz_Panel"
     ScreenGui.Parent = CoreGui
     ScreenGui.IgnoreGuiInset = true
 
-    -- Khung Chính
+    -- Khung chính màu đen đặc (như hình)
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
-    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
-    MainFrame.Size = UDim2.new(0, 450, 0, 300)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -125)
+    MainFrame.Size = UDim2.new(0, 450, 0, 250)
+    MainFrame.BorderSizePixel = 0
     MainFrame.Active = true
-    MainFrame.Draggable = true
-    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
+    MainFrame.Draggable = true -- Cho phép kéo thả
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 4)
 
-    -- Sidebar
-    local SideBar = Instance.new("Frame")
-    SideBar.Name = "SideBar"
-    SideBar.Parent = MainFrame
-    SideBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    SideBar.Size = UDim2.new(0, 100, 1, 0)
-    Instance.new("UICorner", SideBar).CornerRadius = UDim.new(0, 12)
+    -- Nút Power Đỏ (Góc trên bên trái)
+    local PowerBtn = Instance.new("TextButton")
+    PowerBtn.Size = UDim2.new(0, 30, 0, 30)
+    PowerBtn.Position = UDim2.new(0, 5, 0, 5)
+    PowerBtn.BackgroundColor3 = Color3.fromRGB(190, 35, 35)
+    PowerBtn.Text = "⏻"
+    PowerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    PowerBtn.TextSize = 18
+    PowerBtn.Parent = MainFrame
+    Instance.new("UICorner", PowerBtn).CornerRadius = UDim.new(0, 4)
 
-    local SideLayout = Instance.new("UIListLayout")
-    SideLayout.Parent = SideBar
-    SideLayout.Padding = UDim.new(0, 5)
-    SideLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-
-    -- Tiêu đề
+    -- Tiêu đề Panel (Căn giữa phía trên)
     local Title = Instance.new("TextLabel")
-    Title.Parent = MainFrame
-    Title.Text = titleText or "Toruz"
-    Title.Font = Enum.Font.GothamBold
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.TextSize = 14
-    Title.Position = UDim2.new(0, 110, 0, 10)
-    Title.Size = UDim2.new(0, 330, 0, 20)
+    Title.Size = UDim2.new(1, -40, 0, 35)
+    Title.Position = UDim2.new(0, 40, 0, 0)
     Title.BackgroundTransparency = 1
+    Title.Text = titleText or "Panel Free Fire 1.121.1"
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Font = Enum.Font.SourceSans
+    Title.TextSize = 18
+    Title.Parent = MainFrame
 
-    -- Nội dung cuộn
-    local Container = Instance.new("ScrollingFrame")
-    Container.Name = "Container"
-    Container.Parent = MainFrame
-    Container.Position = UDim2.new(0, 110, 0, 40)
-    Container.Size = UDim2.new(0, 330, 0, 250)
-    Container.BackgroundTransparency = 1
-    Container.ScrollBarThickness = 2
-    Container.CanvasSize = UDim2.new(0, 0, 0, 0)
+    -- Sidebar (Chứa Info và các Tab)
+    local SideBar = Instance.new("Frame")
+    SideBar.Size = UDim2.new(0, 100, 1, -40)
+    SideBar.Position = UDim2.new(0, 5, 0, 40)
+    SideBar.BackgroundTransparency = 1
+    SideBar.Parent = MainFrame
 
-    local ContainerLayout = Instance.new("UIListLayout")
-    ContainerLayout.Parent = Container
-    ContainerLayout.Padding = UDim.new(0, 8)
-    
-    ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        Container.CanvasSize = UDim2.new(0, 0, 0, ContainerLayout.AbsoluteContentSize.Y + 20)
+    local UserInfo = Instance.new("TextLabel")
+    UserInfo.Size = UDim2.new(1, 0, 0, 35)
+    UserInfo.BackgroundTransparency = 1
+    UserInfo.Text = (userName or "Tu Sai Mod") .. "\nFps: 60.0"
+    UserInfo.TextColor3 = Color3.fromRGB(255, 255, 255)
+    UserInfo.Font = Enum.Font.SourceSans
+    UserInfo.TextSize = 15
+    UserInfo.Parent = SideBar
+
+    -- Cập nhật FPS thực tế
+    RunService.RenderStepped:Connect(function(dt)
+        UserInfo.Text = (userName or "Tu Sai Mod") .. "\nFps: " .. math.floor(1/dt * 10)/10
     end)
 
-    -- [METHOD: ADDTAB]
+    -- Layout cho các Tab ở Sidebar
+    local TabList = Instance.new("UIListLayout")
+    TabList.Parent = SideBar
+    TabList.Padding = UDim.new(0, 3)
+    TabList.SortOrder = Enum.SortOrder.LayoutOrder
+
+    -- Khung chứa chức năng (Có viền xám bao quanh như hình)
+    local ContentFrame = Instance.new("ScrollingFrame")
+    ContentFrame.Size = UDim2.new(0, 335, 1, -45)
+    ContentFrame.Position = UDim2.new(0, 110, 0, 40)
+    ContentFrame.BackgroundColor3 = Color3.fromRGB(32, 32, 32)
+    ContentFrame.BorderSizePixel = 1
+    ContentFrame.BorderColor3 = Color3.fromRGB(60, 60, 60)
+    ContentFrame.ScrollBarThickness = 2
+    ContentFrame.Parent = MainFrame
+    
+    local ContentLayout = Instance.new("UIListLayout")
+    ContentLayout.Parent = ContentFrame
+    ContentLayout.Padding = UDim.new(0, 2)
+
+    -- Cập nhật Canvas tự động
+    ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 10)
+    end)
+
+    -- [METHOD: ADDTAB] - Nút xám bo góc chuẩn hình
     function Window:AddTab(name, icon)
-        local TabBtn = Instance.new("TextButton")
-        TabBtn.Parent = SideBar
-        TabBtn.Size = UDim2.new(0, 90, 0, 35)
-        TabBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-        TabBtn.Text = (icon or "") .. " " .. name
-        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        TabBtn.Font = Enum.Font.GothamMedium
-        TabBtn.TextSize = 11
-        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
-        
-        -- Ở bản này mình làm đơn giản, bạn có thể thêm logic chuyển đổi Container tại đây
-        return TabBtn
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 26)
+        btn.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+        btn.Text = icon .. " " .. name
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Font = Enum.Font.SourceSans
+        btn.TextSize = 15
+        btn.Parent = SideBar
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+        return btn
     end
 
-    -- [METHOD: ADDPARAGRAPH]
-    function Window:AddParagraph(title, content)
-        local PFrame = Instance.new("Frame")
-        PFrame.Size = UDim2.new(1, -10, 0, 55)
-        PFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        PFrame.Parent = Container
-        Instance.new("UICorner", PFrame).CornerRadius = UDim.new(0, 8)
-
-        local PT = Instance.new("TextLabel")
-        PT.Text = title
-        PT.Size = UDim2.new(1, -20, 0, 25)
-        PT.Position = UDim2.new(0, 10, 0, 5)
-        PT.TextColor3 = Color3.fromRGB(255, 255, 255)
-        PT.Font = Enum.Font.GothamBold
-        PT.BackgroundTransparency = 1
-        PT.TextXAlignment = Enum.TextXAlignment.Left
-        PT.Parent = PFrame
-
-        local PD = Instance.new("TextLabel")
-        PD.Text = content
-        PD.Size = UDim2.new(1, -20, 0, 20)
-        PD.Position = UDim2.new(0, 10, 0, 25)
-        PD.TextColor3 = Color3.fromRGB(180, 180, 180)
-        PD.Font = Enum.Font.Gotham
-        PD.BackgroundTransparency = 1
-        PD.TextXAlignment = Enum.TextXAlignment.Left
-        PD.Parent = PFrame
-    end
-
-    -- [METHOD: ADDTOGGLE]
+    -- [METHOD: ADDTOGGLE] - Ô vuông dấu tích xanh dương
     function Window:AddToggle(text, callback)
-        local TFrame = Instance.new("Frame")
-        TFrame.Size = UDim2.new(1, -10, 0, 35)
-        TFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-        TFrame.Parent = Container
-        Instance.new("UICorner", TFrame).CornerRadius = UDim.new(0, 6)
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(1, 0, 0, 30)
+        frame.BackgroundTransparency = 1
+        frame.Parent = ContentFrame
 
-        local Button = Instance.new("TextButton")
-        Button.Size = UDim2.new(1, 0, 1, 0)
-        Button.BackgroundTransparency = 1
-        Button.Text = "  " .. text
-        Button.TextColor3 = Color3.fromRGB(200, 200, 200)
-        Button.Font = Enum.Font.Gotham
-        Button.TextXAlignment = Enum.TextXAlignment.Left
-        Button.Parent = TFrame
+        local box = Instance.new("TextButton")
+        box.Size = UDim2.new(0, 20, 0, 20)
+        box.Position = UDim2.new(0, 10, 0, 5)
+        box.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+        box.Text = ""
+        box.Parent = frame
+        Instance.new("UICorner", box).CornerRadius = UDim.new(0, 3)
 
-        local Indicator = Instance.new("Frame")
-        Indicator.Size = UDim2.new(0, 18, 0, 18)
-        Indicator.Position = UDim2.new(1, -25, 0.5, -9)
-        Indicator.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        Indicator.Parent = TFrame
-        Instance.new("UICorner", Indicator).CornerRadius = UDim.new(0, 4)
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(1, -40, 1, 0)
+        label.Position = UDim2.new(0, 40, 0, 0)
+        label.BackgroundTransparency = 1
+        label.Text = text
+        label.TextColor3 = Color3.fromRGB(220, 220, 220)
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.Font = Enum.Font.SourceSans
+        label.TextSize = 16
+        label.Parent = frame
 
         local enabled = false
-        Button.MouseButton1Click:Connect(function()
+        box.MouseButton1Click:Connect(function()
             enabled = not enabled
-            TweenService:Create(Indicator, TweenInfo.new(0.2), {
-                BackgroundColor3 = enabled and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(60, 60, 60)
-            }):Play()
+            -- Đổi màu và hiện dấu tích đúng chuẩn hình
+            box.BackgroundColor3 = enabled and Color3.fromRGB(0, 120, 255) or Color3.fromRGB(45, 45, 45)
+            box.Text = enabled and "✓" or ""
+            box.TextColor3 = Color3.fromRGB(255, 255, 255)
             callback(enabled)
         end)
     end
 
-    -- [METHOD: ADDDROPDOWN]
-    function Window:AddDropdown(text, options, callback)
-    local DFrame = Instance.new("Frame")
-    DFrame.Size = UDim2.new(1, -10, 0, 35)
-    DFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    DFrame.ClipsDescendants = true
-    DFrame.Parent = Container
-    Instance.new("UICorner", DFrame).CornerRadius = UDim.new(0, 6)
-
-    local DBtn = Instance.new("TextButton")
-    DBtn.Size = UDim2.new(1, 0, 0, 35)
-    DBtn.BackgroundTransparency = 1
-    DBtn.Text = text .. " : Select"
-    DBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    DBtn.Font = Enum.Font.Gotham
-    DBtn.Parent = DFrame
-
-    local open = false
-    
-    -- Tạo khung Search (Ẩn khi đóng)
-    local SearchBox = Instance.new("TextBox")
-    SearchBox.Size = UDim2.new(1, -10, 0, 25)
-    SearchBox.Position = UDim2.new(0, 5, 0, 40)
-    SearchBox.PlaceholderText = "Search..."
-    SearchBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SearchBox.Visible = false
-    SearchBox.Parent = DFrame
-    Instance.new("UICorner", SearchBox).CornerRadius = UDim.new(0, 4)
-
-    -- Hàm cập nhật danh sách dựa trên Search
-    local function UpdateOptions(filter)
-        -- Xóa các nút cũ
-        for _, v in pairs(DFrame:GetChildren()) do
-            if v.Name == "Option" then v:Destroy() end
-        end
-        
-        local count = 0
-        for i, v in pairs(options) do
-            if filter == "" or string.find(string.lower(v), string.lower(filter)) then
-                count = count + 1
-                local Opt = Instance.new("TextButton")
-                Opt.Name = "Option"
-                Opt.Size = UDim2.new(1, 0, 0, 30)
-                Opt.Position = UDim2.new(0, 0, 0, 70 + (count-1)*30)
-                Opt.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-                Opt.Text = v
-                Opt.TextColor3 = Color3.fromRGB(200, 200, 200)
-                Opt.Font = Enum.Font.Gotham
-                Opt.Parent = DFrame
-                
-                Opt.MouseButton1Click:Connect(function()
-                    DBtn.Text = text .. " : " .. v
-                    callback(v)
-                    open = false
-                    DFrame.Size = UDim2.new(1, -10, 0, 35)
-                    SearchBox.Visible = false
-                end)
-            end
-        end
-        -- Cập nhật chiều cao khung dựa trên số kết quả tìm thấy
-        if open then
-            DFrame.Size = UDim2.new(1, -10, 0, 75 + (count * 30))
-        end
-    end
-
-    DBtn.MouseButton1Click:Connect(function()
-        open = not open
-        SearchBox.Visible = open
-        if open then
-            UpdateOptions("") -- Hiện tất cả khi mới mở
-        else
-            DFrame.Size = UDim2.new(1, -10, 0, 35)
-        end
+    -- Đóng UI khi nhấn nút Power
+    PowerBtn.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
     end)
-
-    -- Lọc mỗi khi gõ phím
-    SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
-        UpdateOptions(SearchBox.Text)
-    end)
-end
-
 
     return Window
 end
