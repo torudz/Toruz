@@ -4,12 +4,11 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
-if CoreGui:FindFirstChild("Toruz_Final") then
-    CoreGui.Toruz_Final:Destroy()
-end
+if CoreGui:FindFirstChild("Toruz_Final") then CoreGui.Toruz_Final:Destroy() end
+if CoreGui:FindFirstChild("ToruMobileBtn") then CoreGui.ToruMobileBtn:Destroy() end
 
 function Library:CreateWindow(panelName, userName)
-    local Window = {Tabs = {}}
+    local Window = {Tabs = {}, Visible = true}
     
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "Toruz_Final"
@@ -27,6 +26,33 @@ function Library:CreateWindow(panelName, userName)
     Main.Draggable = true 
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 4)
 
+    -- Nút Toggle Mobile (Hiện khi ẩn Menu)
+    local MobileGui = Instance.new("ScreenGui", CoreGui)
+    MobileGui.Name = "ToruMobileBtn"
+    MobileGui.Enabled = false
+    
+    local ToggleButton = Instance.new("TextButton", MobileGui)
+    ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+    ToggleButton.Position = UDim2.new(0.05, 0, 0.15, 0)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    ToggleButton.Text = "⚔"
+    ToggleButton.TextColor3 = Color3.new(1, 1, 1)
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextSize = 20
+    ToggleButton.Draggable = true
+    ToggleButton.BorderSizePixel = 0
+    Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0, 10)
+
+    -- Hàm Đóng/Mở Menu
+    local function ToggleMenu()
+        Window.Visible = not Window.Visible
+        Main.Visible = Window.Visible
+        MobileGui.Enabled = not Window.Visible
+    end
+
+    ToggleButton.MouseButton1Click:Connect(ToggleMenu)
+
+    -- Nút Power Đỏ (Nhấn vào để ẩn)
     local PowerBtn = Instance.new("TextButton")
     PowerBtn.Size = UDim2.new(0, 30, 0, 30)
     PowerBtn.Position = UDim2.new(0, 5, 0, 5)
@@ -37,13 +63,13 @@ function Library:CreateWindow(panelName, userName)
     PowerBtn.ZIndex = 5
     PowerBtn.Parent = Main
     Instance.new("UICorner", PowerBtn).CornerRadius = UDim.new(0, 4)
-    PowerBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+    PowerBtn.MouseButton1Click:Connect(ToggleMenu)
 
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1, -40, 0, 35)
     Title.Position = UDim2.new(0, 40, 0, 0)
     Title.BackgroundTransparency = 1
-    Title.Text = panelName or "Panel Free Fire 1.121.1"
+    Title.Text = panelName or "Panel Free Fire"
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.Font = Enum.Font.SourceSansBold
     Title.TextSize = 18
@@ -57,8 +83,6 @@ function Library:CreateWindow(panelName, userName)
     InfoLabel.Text = (userName or "User") .. "\nFps: 60.0"
     InfoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     InfoLabel.Font = Enum.Font.SourceSans
-    InfoLabel.TextSize = 15
-    InfoLabel.ZIndex = 5
     InfoLabel.Parent = Main
 
     RunService.RenderStepped:Connect(function(dt)
@@ -73,7 +97,6 @@ function Library:CreateWindow(panelName, userName)
     Instance.new("UIListLayout", SideBar).Padding = UDim.new(0, 3)
 
     local TabContainer = Instance.new("Frame")
-    TabContainer.Name = "TabContainer"
     TabContainer.Size = UDim2.new(0, 330, 1, -45)
     TabContainer.Position = UDim2.new(0, 115, 0, 40)
     TabContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -88,7 +111,6 @@ function Library:CreateWindow(panelName, userName)
         TabBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
         TabBtn.Text = icon .. " " .. name
         TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-        TabBtn.Font = Enum.Font.SourceSans
         TabBtn.Parent = SideBar
         Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 4)
 
@@ -114,13 +136,23 @@ function Library:CreateWindow(panelName, userName)
             Content.Visible = true
         end)
 
-        if #Window.Tabs == 0 then
-            TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Content.Visible = true
-        end
+        if #Window.Tabs == 0 then TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255) Content.Visible = true end
         table.insert(Window.Tabs, {Button = TabBtn, Content = Content})
 
-        -- TOGGLE
+        -- NÚT BẤM (BUTTON)
+        function TabPage:AddButton(text, callback)
+            local BBtn = Instance.new("TextButton")
+            BBtn.Size = UDim2.new(1, -10, 0, 30)
+            BBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            BBtn.Text = text
+            BBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            BBtn.Font = Enum.Font.SourceSansBold
+            BBtn.Parent = Content
+            Instance.new("UICorner", BBtn).CornerRadius = UDim.new(0, 4)
+            BBtn.MouseButton1Click:Connect(callback)
+        end
+
+        -- TOGGLE, SLIDER, DROPDOWN, PARAGRAPH GIỮ NGUYÊN
         function TabPage:AddToggle(text, callback)
             local TFrame = Instance.new("Frame")
             TFrame.Size = UDim2.new(1, -10, 0, 30)
@@ -140,7 +172,6 @@ function Library:CreateWindow(panelName, userName)
             Label.Text = text
             Label.TextColor3 = Color3.fromRGB(220, 220, 220)
             Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Font = Enum.Font.SourceSans
             Label.Parent = TFrame
             local state = false
             Box.MouseButton1Click:Connect(function()
@@ -151,7 +182,6 @@ function Library:CreateWindow(panelName, userName)
             end)
         end
 
-        -- SLIDER
         function TabPage:AddSlider(text, min, max, default, callback)
             local SFrame = Instance.new("Frame")
             SFrame.Size = UDim2.new(1, -10, 0, 45)
@@ -164,7 +194,6 @@ function Library:CreateWindow(panelName, userName)
             Label.Text = text .. " : " .. default
             Label.TextColor3 = Color3.fromRGB(220, 220, 220)
             Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Font = Enum.Font.SourceSans
             Label.Parent = SFrame
             local SliderBack = Instance.new("Frame")
             SliderBack.Size = UDim2.new(1, -20, 0, 6)
@@ -185,25 +214,11 @@ function Library:CreateWindow(panelName, userName)
                 Label.Text = text .. " : " .. value
                 callback(value)
             end
-            SliderBack.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    dragging = true
-                    move(input)
-                end
-            end)
-            UserInputService.InputChanged:Connect(function(input)
-                if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                    move(input)
-                end
-            end)
-            UserInputService.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    dragging = false
-                end
-            end)
+            SliderBack.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true move(input) end end)
+            UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then move(input) end end)
+            UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
         end
 
-        -- DROPDOWN
         function TabPage:AddDropdown(text, options, callback)
             local DFrame = Instance.new("Frame")
             DFrame.Size = UDim2.new(1, -10, 0, 30)
@@ -217,7 +232,6 @@ function Library:CreateWindow(panelName, userName)
             DBtn.Text = "  " .. text .. " : Chọn..."
             DBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
             DBtn.TextXAlignment = Enum.TextXAlignment.Left
-            DBtn.Font = Enum.Font.SourceSans
             DBtn.Parent = DFrame
             local open = false
             DBtn.MouseButton1Click:Connect(function()
@@ -248,14 +262,12 @@ function Library:CreateWindow(panelName, userName)
             end)
         end
 
-        -- PARAGRAPH (MỚI)
         function TabPage:AddParagraph(title, text)
             local PFrame = Instance.new("Frame")
             PFrame.Size = UDim2.new(1, -10, 0, 60)
             PFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
             PFrame.Parent = Content
             Instance.new("UICorner", PFrame).CornerRadius = UDim.new(0, 4)
-
             local PTitle = Instance.new("TextLabel")
             PTitle.Size = UDim2.new(1, -10, 0, 20)
             PTitle.Position = UDim2.new(0, 5, 0, 5)
@@ -263,24 +275,17 @@ function Library:CreateWindow(panelName, userName)
             PTitle.Text = title
             PTitle.TextColor3 = Color3.fromRGB(0, 120, 255)
             PTitle.Font = Enum.Font.SourceSansBold
-            PTitle.TextSize = 14
-            PTitle.TextXAlignment = Enum.TextXAlignment.Left
             PTitle.Parent = PFrame
-
             local PText = Instance.new("TextLabel")
             PText.Size = UDim2.new(1, -10, 0, 30)
             PText.Position = UDim2.new(0, 5, 0, 25)
             PText.BackgroundTransparency = 1
             PText.Text = text
             PText.TextColor3 = Color3.fromRGB(200, 200, 200)
-            PText.Font = Enum.Font.SourceSans
-            PText.TextSize = 13
             PText.TextWrapped = true
             PText.TextXAlignment = Enum.TextXAlignment.Left
             PText.TextYAlignment = Enum.TextYAlignment.Top
             PText.Parent = PFrame
-            
-            -- Tự động chỉnh độ cao Paragraph theo nội dung chữ
             PFrame.Size = UDim2.new(1, -10, 0, PText.TextBounds.Y + 35)
         end
 
