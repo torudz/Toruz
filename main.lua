@@ -150,46 +150,86 @@ function Library:CreateWindow(titleText)
 
     -- [METHOD: ADDDROPDOWN]
     function Window:AddDropdown(text, options, callback)
-        local DFrame = Instance.new("Frame")
-        DFrame.Size = UDim2.new(1, -10, 0, 35)
-        DFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-        DFrame.ClipsDescendants = true
-        DFrame.Parent = Container
-        Instance.new("UICorner", DFrame).CornerRadius = UDim.new(0, 6)
+    local DFrame = Instance.new("Frame")
+    DFrame.Size = UDim2.new(1, -10, 0, 35)
+    DFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    DFrame.ClipsDescendants = true
+    DFrame.Parent = Container
+    Instance.new("UICorner", DFrame).CornerRadius = UDim.new(0, 6)
 
-        local DBtn = Instance.new("TextButton")
-        DBtn.Size = UDim2.new(1, 0, 0, 35)
-        DBtn.BackgroundTransparency = 1
-        DBtn.Text = text .. " : Select"
-        DBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        DBtn.Font = Enum.Font.Gotham
-        DBtn.Parent = DFrame
+    local DBtn = Instance.new("TextButton")
+    DBtn.Size = UDim2.new(1, 0, 0, 35)
+    DBtn.BackgroundTransparency = 1
+    DBtn.Text = text .. " : Select"
+    DBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    DBtn.Font = Enum.Font.Gotham
+    DBtn.Parent = DFrame
 
-        local open = false
-        DBtn.MouseButton1Click:Connect(function()
-            open = not open
-            DFrame.Size = open and UDim2.new(1, -10, 0, 35 + (#options * 30)) or UDim2.new(1, -10, 0, 35)
-            if open then
-                for i, v in pairs(options) do
-                    local Opt = Instance.new("TextButton")
-                    Opt.Size = UDim2.new(1, 0, 0, 30)
-                    Opt.Position = UDim2.new(0, 0, 0, 35 + (i-1)*30)
-                    Opt.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-                    Opt.Text = v
-                    Opt.TextColor3 = Color3.fromRGB(200, 200, 200)
-                    Opt.Font = Enum.Font.Gotham
-                    Opt.Parent = DFrame
-                    
-                    Opt.MouseButton1Click:Connect(function()
-                        DBtn.Text = text .. " : " .. v
-                        callback(v)
-                        open = false
-                        DFrame.Size = UDim2.new(1, -10, 0, 35)
-                    end)
-                end
+    local open = false
+    
+    -- Tạo khung Search (Ẩn khi đóng)
+    local SearchBox = Instance.new("TextBox")
+    SearchBox.Size = UDim2.new(1, -10, 0, 25)
+    SearchBox.Position = UDim2.new(0, 5, 0, 40)
+    SearchBox.PlaceholderText = "Search..."
+    SearchBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SearchBox.Visible = false
+    SearchBox.Parent = DFrame
+    Instance.new("UICorner", SearchBox).CornerRadius = UDim.new(0, 4)
+
+    -- Hàm cập nhật danh sách dựa trên Search
+    local function UpdateOptions(filter)
+        -- Xóa các nút cũ
+        for _, v in pairs(DFrame:GetChildren()) do
+            if v.Name == "Option" then v:Destroy() end
+        end
+        
+        local count = 0
+        for i, v in pairs(options) do
+            if filter == "" or string.find(string.lower(v), string.lower(filter)) then
+                count = count + 1
+                local Opt = Instance.new("TextButton")
+                Opt.Name = "Option"
+                Opt.Size = UDim2.new(1, 0, 0, 30)
+                Opt.Position = UDim2.new(0, 0, 0, 70 + (count-1)*30)
+                Opt.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+                Opt.Text = v
+                Opt.TextColor3 = Color3.fromRGB(200, 200, 200)
+                Opt.Font = Enum.Font.Gotham
+                Opt.Parent = DFrame
+                
+                Opt.MouseButton1Click:Connect(function()
+                    DBtn.Text = text .. " : " .. v
+                    callback(v)
+                    open = false
+                    DFrame.Size = UDim2.new(1, -10, 0, 35)
+                    SearchBox.Visible = false
+                end)
             end
-        end)
+        end
+        -- Cập nhật chiều cao khung dựa trên số kết quả tìm thấy
+        if open then
+            DFrame.Size = UDim2.new(1, -10, 0, 75 + (count * 30))
+        end
     end
+
+    DBtn.MouseButton1Click:Connect(function()
+        open = not open
+        SearchBox.Visible = open
+        if open then
+            UpdateOptions("") -- Hiện tất cả khi mới mở
+        else
+            DFrame.Size = UDim2.new(1, -10, 0, 35)
+        end
+    end)
+
+    -- Lọc mỗi khi gõ phím
+    SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+        UpdateOptions(SearchBox.Text)
+    end)
+end
+
 
     return Window
 end
