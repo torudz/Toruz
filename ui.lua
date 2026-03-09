@@ -509,7 +509,7 @@ function Library:CreateWindow(panelName, userName)
             Label.BackgroundTransparency = 1
             Label.Text = "  › " .. text
             Label.TextColor3 = Color3.fromRGB(150, 150, 180)
-            Label.Font = Enum.Font.GothamItalic
+            Label.Font = Enum.Font.GothamSemiboldItalic
             Label.TextSize = 12
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Content
