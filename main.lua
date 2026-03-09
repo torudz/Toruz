@@ -3,8 +3,8 @@ local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 
 -- Xóa bản cũ nếu tồn tại để tránh đè UI
-if CoreGui:FindFirstChild("GeminiPrism_Mobile") then
-    CoreGui.GeminiPrism_Mobile:Destroy()
+if CoreGui:FindFirstChild("Toruz") then
+    CoreGui.Toruz:Destroy()
 end
 
 function Library:CreateWindow(titleText)
@@ -12,7 +12,7 @@ function Library:CreateWindow(titleText)
     
     -- Khởi tạo ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "GeminiPrism_Mobile"
+    ScreenGui.Name = "Toruz"
     ScreenGui.Parent = CoreGui
     ScreenGui.IgnoreGuiInset = true
 
@@ -43,7 +43,7 @@ function Library:CreateWindow(titleText)
     -- Tiêu đề
     local Title = Instance.new("TextLabel")
     Title.Parent = MainFrame
-    Title.Text = titleText or "GEMINI PRISM"
+    Title.Text = titleText or "Toruz"
     Title.Font = Enum.Font.GothamBold
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextSize = 14
