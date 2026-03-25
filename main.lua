@@ -370,6 +370,103 @@ end
     Label.Parent = Content
 end
 
+-- TOGGLE CÓ (?) TOOLTIP
+function TabPage:AddToggleTip(text, tip, callback)
+    local TFrame = Instance.new("Frame")
+    TFrame.Size = UDim2.new(1, -10, 0, 30)
+    TFrame.BackgroundTransparency = 1
+    TFrame.Parent = Content
+
+    local Box = Instance.new("TextButton")
+    Box.Size = UDim2.new(0, 20, 0, 20)
+    Box.Position = UDim2.new(0, 6, 0.5, -10)
+    Box.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    Box.Text = ""
+    Box.Parent = TFrame
+    Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 4)
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -60, 1, 0)
+    Label.Position = UDim2.new(0, 32, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(220, 220, 220)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Font = Enum.Font.SourceSans
+    Label.TextSize = 14
+    Label.Parent = TFrame
+
+    -- Nút (?)
+    local QBtn = Instance.new("TextButton")
+    QBtn.Size = UDim2.new(0, 22, 0, 22)
+    QBtn.Position = UDim2.new(1, -26, 0.5, -11)
+    QBtn.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    QBtn.Text = "(?)"
+    QBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+    QBtn.Font = Enum.Font.SourceSansBold
+    QBtn.TextSize = 13
+    QBtn.Parent = TFrame
+    Instance.new("UICorner", QBtn).CornerRadius = UDim.new(1, 0)
+
+    -- Tooltip box (ẩn mặc định)
+    local Tooltip = Instance.new("Frame")
+    Tooltip.Size = UDim2.new(1, -10, 0, 0)
+    Tooltip.Position = UDim2.new(0, 5, 1, 2)
+    Tooltip.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Tooltip.ClipsDescendants = true
+    Tooltip.ZIndex = 20
+    Tooltip.Visible = false
+    Tooltip.Parent = TFrame
+    Instance.new("UICorner", Tooltip).CornerRadius = UDim.new(0, 5)
+    local TipStroke = Instance.new("UIStroke", Tooltip)
+    TipStroke.Color = Color3.fromRGB(0, 110, 220)
+    TipStroke.Thickness = 1
+
+    local TipText = Instance.new("TextLabel")
+    TipText.Size = UDim2.new(1, -10, 1, -8)
+    TipText.Position = UDim2.new(0, 5, 0, 4)
+    TipText.BackgroundTransparency = 1
+    TipText.Text = tip
+    TipText.TextColor3 = Color3.fromRGB(180, 180, 180)
+    TipText.TextWrapped = true
+    TipText.TextXAlignment = Enum.TextXAlignment.Left
+    TipText.TextYAlignment = Enum.TextYAlignment.Top
+    TipText.Font = Enum.Font.SourceSansItalic
+    TipText.TextSize = 13
+    TipText.ZIndex = 21
+    TipText.Parent = Tooltip
+
+    local tipOpen = false
+    QBtn.MouseButton1Click:Connect(function()
+        tipOpen = not tipOpen
+        if tipOpen then
+            local h = TipText.TextBounds.Y + 16
+            Tooltip.Visible = true
+            Tooltip.Size = UDim2.new(1, -10, 0, 0)
+            TFrame.Size = UDim2.new(1, -10, 0, 30 + h)
+            TweenService:Create(Tooltip, TweenInfo.new(0.2), {Size = UDim2.new(1, -10, 0, h)}):Play()
+            QBtn.TextColor3 = Color3.fromRGB(0, 150, 255)
+        else
+            TFrame.Size = UDim2.new(1, -10, 0, 30)
+            TweenService:Create(Tooltip, TweenInfo.new(0.15), {Size = UDim2.new(1, -10, 0, 0)}):Play()
+            task.delay(0.15, function() Tooltip.Visible = false end)
+            QBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+        end
+    end)
+
+    local state = false
+    Box.MouseButton1Click:Connect(function()
+        state = not state
+        TweenService:Create(Box, TweenInfo.new(0.15), {
+            BackgroundColor3 = state and Color3.fromRGB(0, 110, 220) or Color3.fromRGB(60, 60, 60)
+        }):Play()
+        Box.Text = state and "✓" or ""
+        Box.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Box.TextSize = 11
+        callback(state)
+    end)
+end
+
 -- 1. Nút Copy (Dùng để Copy Discord/Link)
 function TabPage:AddCopyButton(text, contentToCopy)
     local CBtn = Instance.new("TextButton")
