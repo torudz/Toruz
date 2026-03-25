@@ -57,7 +57,7 @@ function Library:CreateWindow(panelName, userName)
     PowerBtn.Size = UDim2.new(0, 30, 0, 30)
     PowerBtn.Position = UDim2.new(0, 5, 0, 5)
     PowerBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-    PowerBtn.Text = "⏻"
+    PowerBtn.Text = "X"
     PowerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     PowerBtn.TextSize = 18
     PowerBtn.ZIndex = 5
@@ -220,47 +220,116 @@ function Library:CreateWindow(panelName, userName)
         end
 
         function TabPage:AddDropdown(text, options, callback)
-            local DFrame = Instance.new("Frame")
-            DFrame.Size = UDim2.new(1, -10, 0, 30)
-            DFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-            DFrame.ClipsDescendants = true
-            DFrame.Parent = Content
-            Instance.new("UICorner", DFrame).CornerRadius = UDim.new(0, 4)
-            local DBtn = Instance.new("TextButton")
-            DBtn.Size = UDim2.new(1, 0, 0, 30)
-            DBtn.BackgroundTransparency = 1
-            DBtn.Text = "  " .. text .. " : Chọn..."
+    local selected = nil
+    local open = false
+
+    -- Container chính
+    local DFrame = Instance.new("Frame")
+    DFrame.Size = UDim2.new(1, -10, 0, 32)
+    DFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    DFrame.ClipsDescendants = true
+    DFrame.Parent = Content
+    local DCorner = Instance.new("UICorner", DFrame)
+    DCorner.CornerRadius = UDim.new(0, 6)
+    local DStroke = Instance.new("UIStroke", DFrame)
+    DStroke.Color = Color3.fromRGB(70, 70, 70)
+    DStroke.Thickness = 1
+
+    -- Header row
+    local DBtn = Instance.new("TextButton")
+    DBtn.Size = UDim2.new(1, -32, 0, 32)
+    DBtn.Position = UDim2.new(0, 10, 0, 0)
+    DBtn.BackgroundTransparency = 1
+    DBtn.Text = text .. "  :  Chọn..."
+    DBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    DBtn.TextXAlignment = Enum.TextXAlignment.Left
+    DBtn.Font = Enum.Font.SourceSansSemibold
+    DBtn.TextSize = 14
+    DBtn.Parent = DFrame
+
+    -- Mũi tên
+    local Arrow = Instance.new("TextLabel")
+    Arrow.Size = UDim2.new(0, 28, 0, 32)
+    Arrow.Position = UDim2.new(1, -30, 0, 0)
+    Arrow.BackgroundTransparency = 1
+    Arrow.Text = "▼"
+    Arrow.TextColor3 = Color3.fromRGB(150, 150, 150)
+    Arrow.TextSize = 12
+    Arrow.Parent = DFrame
+
+    -- Build option rows
+    local optionFrames = {}
+    for i, v in ipairs(options) do
+        local Opt = Instance.new("TextButton")
+        Opt.Name = "Option_" .. i
+        Opt.Size = UDim2.new(1, -2, 0, 28)
+        Opt.Position = UDim2.new(0, 1, 0, 32 + (i - 1) * 28)
+        Opt.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        Opt.BorderSizePixel = 0
+        Opt.Text = "  " .. v
+        Opt.TextColor3 = Color3.fromRGB(200, 200, 200)
+        Opt.TextXAlignment = Enum.TextXAlignment.Left
+        Opt.Font = Enum.Font.SourceSans
+        Opt.TextSize = 14
+        Opt.Parent = DFrame
+        Instance.new("UICorner", Opt).CornerRadius = UDim.new(0, 4)
+
+        -- Hover effect
+        Opt.MouseEnter:Connect(function()
+            if selected ~= v then
+                TweenService:Create(Opt, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(65, 65, 65)}):Play()
+            end
+        end)
+        Opt.MouseLeave:Connect(function()
+            if selected ~= v then
+                TweenService:Create(Opt, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+            end
+        end)
+
+        Opt.MouseButton1Click:Connect(function()
+            -- Reset màu tất cả option
+            for _, f in ipairs(optionFrames) do
+                TweenService:Create(f, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+                f.TextColor3 = Color3.fromRGB(200, 200, 200)
+            end
+            -- Highlight option đang chọn
+            TweenService:Create(Opt, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0, 110, 220)}):Play()
+            Opt.TextColor3 = Color3.fromRGB(255, 255, 255)
+            selected = v
+            DBtn.Text = text .. "  :  " .. v
             DBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            DBtn.TextXAlignment = Enum.TextXAlignment.Left
-            DBtn.Parent = DFrame
-            local open = false
-            DBtn.MouseButton1Click:Connect(function()
-                open = not open
-                TweenService:Create(DFrame, TweenInfo.new(0.3), {Size = open and UDim2.new(1, -10, 0, 30 + (#options * 25)) or UDim2.new(1, -10, 0, 30)}):Play()
-                if open then
-                    for i, v in pairs(options) do
-                        local Opt = Instance.new("TextButton")
-                        Opt.Name = "Option"
-                        Opt.Size = UDim2.new(1, 0, 0, 25)
-                        Opt.Position = UDim2.new(0, 0, 0, 30 + (i-1)*25)
-                        Opt.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-                        Opt.BorderSizePixel = 0
-                        Opt.Text = v
-                        Opt.TextColor3 = Color3.fromRGB(200, 200, 200)
-                        Opt.Parent = DFrame
-                        Opt.MouseButton1Click:Connect(function()
-                            DBtn.Text = "  " .. text .. " : " .. v
-                            callback(v)
-                            open = false
-                            TweenService:Create(DFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, -10, 0, 30)}):Play()
-                            for _, obj in pairs(DFrame:GetChildren()) do if obj.Name == "Option" then obj:Destroy() end end
-                        end)
-                    end
-                else
-                    for _, obj in pairs(DFrame:GetChildren()) do if obj.Name == "Option" then obj:Destroy() end end
-                end
-            end)
+            callback(v)
+            -- Đóng dropdown
+            open = false
+            TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
+            TweenService:Create(DStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(70, 70, 70)}):Play()
+            TweenService:Create(DFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(1, -10, 0, 32)
+            }):Play()
+        end)
+
+        table.insert(optionFrames, Opt)
+    end
+
+    local totalHeight = 32 + #options * 28
+
+    DBtn.MouseButton1Click:Connect(function()
+        open = not open
+        if open then
+            TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 180}):Play()
+            TweenService:Create(DStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(0, 110, 220)}):Play()
+            TweenService:Create(DFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(1, -10, 0, totalHeight)
+            }):Play()
+        else
+            TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
+            TweenService:Create(DStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(70, 70, 70)}):Play()
+            TweenService:Create(DFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(1, -10, 0, 32)
+            }):Play()
         end
+    end)
+end
 
         function TabPage:AddParagraph(title, text)
             local PFrame = Instance.new("Frame")
