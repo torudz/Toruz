@@ -219,11 +219,12 @@ function Library:CreateWindow(panelName, userName)
             UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
         end
 
-        function TabPage:AddDropdown(text, options, callback)
+
+function TabPage:AddDropdown(text, options, callback)
     local selected = nil
     local open = false
+    local totalHeight = 0
 
-    -- Container chính
     local DFrame = Instance.new("Frame")
     DFrame.Size = UDim2.new(1, -10, 0, 32)
     DFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
@@ -235,7 +236,6 @@ function Library:CreateWindow(panelName, userName)
     DStroke.Color = Color3.fromRGB(70, 70, 70)
     DStroke.Thickness = 1
 
-    -- Header row
     local DBtn = Instance.new("TextButton")
     DBtn.Size = UDim2.new(1, -32, 0, 32)
     DBtn.Position = UDim2.new(0, 10, 0, 0)
@@ -247,7 +247,6 @@ function Library:CreateWindow(panelName, userName)
     DBtn.TextSize = 14
     DBtn.Parent = DFrame
 
-    -- Mũi tên
     local Arrow = Instance.new("TextLabel")
     Arrow.Size = UDim2.new(0, 28, 0, 32)
     Arrow.Position = UDim2.new(1, -30, 0, 0)
@@ -257,61 +256,62 @@ function Library:CreateWindow(panelName, userName)
     Arrow.TextSize = 12
     Arrow.Parent = DFrame
 
-    -- Build option rows
     local optionFrames = {}
-    for i, v in ipairs(options) do
-        local Opt = Instance.new("TextButton")
-        Opt.Name = "Option_" .. i
-        Opt.Size = UDim2.new(1, -2, 0, 28)
-        Opt.Position = UDim2.new(0, 1, 0, 32 + (i - 1) * 28)
-        Opt.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        Opt.BorderSizePixel = 0
-        Opt.Text = "  " .. v
-        Opt.TextColor3 = Color3.fromRGB(200, 200, 200)
-        Opt.TextXAlignment = Enum.TextXAlignment.Left
-        Opt.Font = Enum.Font.SourceSans
-        Opt.TextSize = 14
-        Opt.Parent = DFrame
-        Instance.new("UICorner", Opt).CornerRadius = UDim.new(0, 4)
 
-        -- Hover effect
-        Opt.MouseEnter:Connect(function()
-            if selected ~= v then
-                TweenService:Create(Opt, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(65, 65, 65)}):Play()
-            end
-        end)
-        Opt.MouseLeave:Connect(function()
-            if selected ~= v then
-                TweenService:Create(Opt, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
-            end
-        end)
+    local function buildOptions(opts)
+        for _, f in ipairs(optionFrames) do f:Destroy() end
+        table.clear(optionFrames)
+        totalHeight = 32 + #opts * 28
 
-        Opt.MouseButton1Click:Connect(function()
-            -- Reset màu tất cả option
-            for _, f in ipairs(optionFrames) do
-                TweenService:Create(f, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
-                f.TextColor3 = Color3.fromRGB(200, 200, 200)
-            end
-            -- Highlight option đang chọn
-            TweenService:Create(Opt, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0, 110, 220)}):Play()
-            Opt.TextColor3 = Color3.fromRGB(255, 255, 255)
-            selected = v
-            DBtn.Text = text .. "  :  " .. v
-            DBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            callback(v)
-            -- Đóng dropdown
-            open = false
-            TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
-            TweenService:Create(DStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(70, 70, 70)}):Play()
-            TweenService:Create(DFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                Size = UDim2.new(1, -10, 0, 32)
-            }):Play()
-        end)
+        for i, v in ipairs(opts) do
+            local Opt = Instance.new("TextButton")
+            Opt.Name = "Option_" .. i
+            Opt.Size = UDim2.new(1, -2, 0, 28)
+            Opt.Position = UDim2.new(0, 1, 0, 32 + (i - 1) * 28)
+            Opt.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            Opt.BorderSizePixel = 0
+            Opt.Text = "  " .. v
+            Opt.TextColor3 = Color3.fromRGB(200, 200, 200)
+            Opt.TextXAlignment = Enum.TextXAlignment.Left
+            Opt.Font = Enum.Font.SourceSans
+            Opt.TextSize = 14
+            Opt.Parent = DFrame
+            Instance.new("UICorner", Opt).CornerRadius = UDim.new(0, 4)
 
-        table.insert(optionFrames, Opt)
+            Opt.MouseEnter:Connect(function()
+                if selected ~= v then
+                    TweenService:Create(Opt, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(65, 65, 65)}):Play()
+                end
+            end)
+            Opt.MouseLeave:Connect(function()
+                if selected ~= v then
+                    TweenService:Create(Opt, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+                end
+            end)
+            Opt.MouseButton1Click:Connect(function()
+                for _, f in ipairs(optionFrames) do
+                    TweenService:Create(f, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+                    f.TextColor3 = Color3.fromRGB(200, 200, 200)
+                end
+                TweenService:Create(Opt, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(0, 110, 220)}):Play()
+                Opt.TextColor3 = Color3.fromRGB(255, 255, 255)
+                selected = v
+                DBtn.Text = text .. "  :  " .. v
+                DBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                callback(v)
+                open = false
+                TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
+                TweenService:Create(DStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(70, 70, 70)}):Play()
+                TweenService:Create(DFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Size = UDim2.new(1, -10, 0, 32)
+                }):Play()
+            end)
+
+            table.insert(optionFrames, Opt)
+        end
     end
 
-    local totalHeight = 32 + #options * 28
+    buildOptions(options)
 
     DBtn.MouseButton1Click:Connect(function()
         open = not open
@@ -329,6 +329,21 @@ function Library:CreateWindow(panelName, userName)
             }):Play()
         end
     end)
+
+    local obj = {}
+    function obj:Refresh(newOptions)
+        open = false
+        selected = nil
+        DBtn.Text = text .. "  :  Chọn..."
+        DBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        TweenService:Create(Arrow, TweenInfo.new(0.2), {Rotation = 0}):Play()
+        TweenService:Create(DStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(70, 70, 70)}):Play()
+        TweenService:Create(DFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(1, -10, 0, 32)
+        }):Play()
+        buildOptions(newOptions)
+    end
+    return obj
 end
 
         function TabPage:AddParagraph(title, text)
